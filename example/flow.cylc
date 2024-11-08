@@ -1,0 +1,13 @@
+#!jinja2
+
+{% set ANSWER = ANSWER | default(42) %}
+{{ assert(ANSWER == 42, 'The constants are changing') }}
+
+[scheduling]
+    [[graph]]
+        R1 = """
+            foo
+        """
+
+[runtime]
+  [[foo]]  # indentation is off here

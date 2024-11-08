@@ -1,0 +1,60 @@
+name: test
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '17 22 * * 6'  # Every Saturday at 22:17
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest']
+        micromamba_installed: [true, false]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Mamba
+        if: ${{ matrix.micromamba_installed }} == true
+        uses: mamba-org/setup-micromamba@v1
+
+      - name: Setup Cylc
+        uses: ./
+        with:
+          cylc_rose: true
+
+      - name: Version
+        run: |
+          cylc version
+
+      - name: Validate
+        run: |
+          # this should pass
+          cylc validate ./example;
+          # this should fail
+          ! cylc validate ./example -s ANSWER=6;
+
+      - name: Lint
+        run: |
+          # this should fail
+          ! cylc lint ./example > out;
+          grep 'S004' out;
+          grep 'found 1 issue' out;
+
+      - name: Rose Macro
+        run: |
+          # this should fail
+          ! rose macro -V -C ./example 2> err;
+          grep 'issues: 1' err
+          grep 'Not an integer' err
+
+      - name: Rose Metadata Check
+        run: |
+          rose metadata-check -C ./example/meta

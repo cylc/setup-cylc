@@ -1,0 +1,4 @@
+# FORMAT: <proper-name>  <proper-email>  <commit-name>  <commit-email>
+# Omit commit-name or commit-email if same as proper
+
+Oliver Sanders             <oliver.sanders@metoffice.gov.uk>    Oliver sanders

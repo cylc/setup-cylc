@@ -1,0 +1,84 @@
+name: Setup Cylc
+description: Install Cylc.
+
+inputs:
+  cylc_version:
+    description: 'The Cylc version to install (or an abbreviation e.g. 8 to pick up the latest version).'
+    default: '8'
+  cylc_rose:
+    description: 'Install cylc-rose?'
+    default: false
+
+runs:
+  using: composite
+  steps:
+    # check if micromamba is already installed
+    - name: Check Mamba
+      id: check_mamba
+      continue-on-error: true
+      shell: bash
+      run: micromamba --version
+
+    # install micromamba if necessary
+    - name: Install Mamba
+      if: steps.check_mamba.outcome == 'failure'
+      uses: mamba-org/setup-micromamba@v1
+      with:
+        init-shell: bash
+        post-cleanup: 'all'
+
+    # install cylc (and cylc-rose if requested) into a mamba environment
+    - name: Install Cylc
+      shell: bash
+      run: |
+        # write env file
+        cat > cylc_env.yml <<__ENV__
+        name: cylc
+        channels:
+          - conda-forge
+        dependencies:
+          - cylc-flow-base=${{ inputs.cylc_version }}
+        __ENV__
+
+        # install cylc-rose?
+        if ${{ inputs.cylc_rose }}; then
+          echo '  - cylc-rose' >> cylc_env.yml
+        fi
+
+        # create environment
+        micromamba env create -y --file=cylc_env.yml
+        rm cylc_env.yml
+
+    # create required wrapper scripts
+    - name: Install Wrapper
+      shell: bash -el {0}
+      run: |
+        # create a temp dir for wrapper scripts
+        cd $(mktemp -d)
+
+        # determine which wrappers to create
+        micromamba activate cylc
+        wrappers=(cylc isodatetime)
+        if ${{ inputs.cylc_rose }}; then
+          wrappers+=(rose)
+        fi
+
+        # create a wrapper for each command in the temp dir
+        for wrapper in "${wrappers[@]}"; do
+          EXE="$(command -v "$wrapper")"
+          cat > "$wrapper" <<__WRAPPER__
+        #!/usr/bin/env bash
+        exec "${EXE}" "\$@"
+        __WRAPPER__
+
+          chmod +x "$wrapper"
+        done
+
+        # add the temp dir to $PATH for future steps
+        echo "$PWD" >> $GITHUB_PATH
+
+    # check the install worked
+    - name: Test
+      shell: bash
+      run: |
+        cylc version
