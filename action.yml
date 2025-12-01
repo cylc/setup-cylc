@@ -22,7 +22,7 @@ runs:
     # install micromamba if necessary
     - name: Install Mamba
       if: steps.check_mamba.outcome == 'failure'
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v2
       with:
         init-shell: bash
         post-cleanup: 'all'
