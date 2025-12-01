@@ -82,3 +82,13 @@ runs:
       shell: bash
       run: |
         cylc version
+
+    - name: Patch DNS (Mac OS)
+      shell: bash
+      if: startsWith(runner.os, 'macos')
+      run: |
+        # NOTE: This is cloned from cylc/release-actions
+        # We don't pull this action in from that repo as that would create an
+        # additional dependency which would need to be whitelisted by GH orgs.
+        echo -e "$(ipconfig getifaddr en0) $(hostname -f) $(hostname -s)" | sudo tee -a /etc/hosts
+        dscacheutil -q host -a name $(hostname -f)
