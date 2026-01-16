@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Cylc
-        uses: cylc/setup-cylc@v1
+        uses: cylc/setup-cylc@v1.0.1
         with:
           cylc_rose: true
 
