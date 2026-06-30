@@ -23,7 +23,7 @@ jobs:
 
       - name: Setup Mamba
         if: matrix.micromamba_installed == true
-        uses: mamba-org/setup-micromamba@v2
+        uses: mamba-org/setup-micromamba@add3a49764cedee8ee24e82dfde87f5bc2914462 # v2
 
       - name: Setup Cylc
         uses: ./
