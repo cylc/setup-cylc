@@ -10,11 +10,18 @@
   "automergeStrategy": "squash",
   "minimumReleaseAge": "4 days",
   "internalChecksFilter": "strict",
+  "prCreation": "not-pending",
   "packageRules": [
     {
+      "matchDepTypes": ["action"],
       "matchUpdateTypes": ["minor", "patch"],
       "matchCurrentVersion": "!/^0/",
       "automerge": true
+    },
+    {
+      "matchDepTypes": ["action"],
+      "matchUpdateTypes": ["digest"],
+      "enabled": false
     }
   ]
 }
